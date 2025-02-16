@@ -82,11 +82,13 @@ class iRacingDisplay:
         else:
             self.speed_label.configure(text="000",font=("Arial", 12))
             self.gear_label.configure(text="N")
+            self.root.quit()
         #update per 20ms
         self.root.after(20, self.update_values)
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
     app = iRacingDisplay(root)
-    #root.overrideredirect(True)
+    root.wm_attributes("-topmost", 1)
+    root.overrideredirect(True)
     root.mainloop()
