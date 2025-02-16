@@ -24,13 +24,13 @@ class iRacingDisplay:
         self.gear_label.place(relx=0.3,rely=0.6, anchor=CENTER)
 
         self.throttleprogress = DoubleVar()
-        self.progressbar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100) 
-        self.progressbar.place(relx=0.6, rely=0.5, anchor=CENTER)
+        self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100) 
+        self.throttlebar.place(relx=0.6, rely=0.5, anchor=CENTER)
      
         self.brakeprogress = DoubleVar()
         self.brakebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.brakeprogress, height=100, progress_color="red"
                                                      , border_color="black") 
-        self.brakebar.place(relx=0.72, rely=0.5, anchor=CENTER)
+        self.brakebar.place(relx=0.70, rely=0.5, anchor=CENTER)
 
         self.update_values()
 
@@ -56,24 +56,27 @@ class iRacingDisplay:
             if throttle is not None:
                 if throttle == 1:
                     #create clean bars if value = 1
-                    self.progressbar.configure(fg_color='green')
                     self.throttleprogress.set(0.99)
+                    self.throttlebar.configure(fg_color='green')
                 #create clean bars if value = 0
                 elif throttle == 0:
-                    self.progressbar.configure(progress_color='#4a4d50')
                     self.throttleprogress.set(0)
+                    self.throttlebar.configure(progress_color='#4a4d50')
                 else:
                     self.throttleprogress.set(throttle)
+                    self.throttlebar.configure(progress_color='green', fg_color='#4a4d50')
             #set brake value
             if brake is not None:
                 if brake == 1:
                     #create clean bars if value = 1
-                    self.brakebar.configure(fg_color='red')
                     self.brakeprogress.set(0.99)
+                    self.brakebar.configure(fg_color='red')
                 #create clean bars if value = 0
                 elif brake == 0:
+                    self.brakebar.set(0)
                     self.brakebar.configure(progress_color='#4a4d50')
                 else:
+                    self.brakebar.configure(progress_color='red', fg_color='#4a4d50')
                     self.brakeprogress.set(brake)
         #set base display
         else:
@@ -83,7 +86,6 @@ class iRacingDisplay:
         self.root.after(20, self.update_values)
 
 if __name__ == "__main__":
-    #root = tk.Tk()
     root = customtkinter.CTk()
     app = iRacingDisplay(root)
     #root.overrideredirect(True)
