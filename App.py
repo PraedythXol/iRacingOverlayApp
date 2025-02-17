@@ -13,24 +13,33 @@ class iRacingDisplay:
         self.root.geometry("200x125")
         self.root.title("iRacing Live Data")
         #root.configure(bg='#ff4b81')
+        
+        def move_root(e):
+            root.geometry(f'+{e.x_root-100}+{e.y_root-62.5}')
+
+        self.root.bind("<B1-Motion>", move_root)
 
         self.ir = irsdk.IRSDK()
         self.ir.startup()
 
-        self.speed_label = customtkinter.CTkLabel(root, text="Speed: N/A", font=("Arial", 18), text_color="white")
-        self.speed_label.place(relx=0.3, rely=0.28, anchor=CENTER)
+        #creating speed text
+        self.speed_label = customtkinter.CTkLabel(root, text="Speed: N/A", font=("Bahnschrift", 24, "bold"), text_color="white")
+        self.speed_label.place(relx=0.33, rely=0.28, anchor=CENTER)
 
-        self.gear_label = customtkinter.CTkLabel(root, text="Gear: N/A", font=("Arial", 32), text_color="white")
-        self.gear_label.place(relx=0.3,rely=0.6, anchor=CENTER)
+        #creating gear text
+        self.gear_label = customtkinter.CTkLabel(root, text="Gear: N/A", font=("Bahnschrift", 40, "bold"), text_color="#ff8934")
+        self.gear_label.place(relx=0.33,rely=0.6, anchor=CENTER)
 
+        #creating throttle bar
         self.throttleprogress = DoubleVar()
-        self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100) 
-        self.throttlebar.place(relx=0.6, rely=0.5, anchor=CENTER)
+        self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100, border_color="black") 
+        self.throttlebar.place(relx=0.76, rely=0.5, anchor=CENTER)
      
+        #creating brake bar
         self.brakeprogress = DoubleVar()
         self.brakebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.brakeprogress, height=100, progress_color="red"
                                                      , border_color="black") 
-        self.brakebar.place(relx=0.70, rely=0.5, anchor=CENTER)
+        self.brakebar.place(relx=0.66, rely=0.5, anchor=CENTER)
 
         self.update_values()
 
@@ -80,9 +89,9 @@ class iRacingDisplay:
                     self.brakeprogress.set(brake)
         #set base display
         else:
-            self.speed_label.configure(text="000",font=("Arial", 12))
-            self.gear_label.configure(text="N")
-            self.root.quit()
+            self.speed_label.configure(text="000",font=("Bahnschrift", 24, "bold"))
+            self.gear_label.configure(text="N", font=("Bahnschrift", 48, "bold"))
+            #self.root.quit()
         #update per 20ms
         self.root.after(20, self.update_values)
 
