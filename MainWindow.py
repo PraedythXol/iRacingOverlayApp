@@ -104,12 +104,30 @@ class main_Window:
         #self.menu_button.grid(row=0, column=0, sticky="wsn", pady=0, padx=0)
 
         #switch and function to enable overlay position adjustment
-        def overlay_visibility():
-            return
+        def switch_function():
+            if self.switch_var.get() == "on":
+                open_telemetry_window()
+            else:
+                close_telemetry_window()
 
-        self.overlay_switch = customtkinter.CTkSwitch(root, command=overlay_visibility, text="Show Overlay", 
+        #creates telemetry_window overlay
+        def open_telemetry_window():
+            global input_telemetry
+            input_telemetry = customtkinter.CTkToplevel()
+            iRacingDisplay(input_telemetry)
+            input_telemetry.wm_attributes("-topmost", 1)
+            input_telemetry.overrideredirect(True)
+            input_telemetry.mainloop()
+
+        #closes the window
+        def close_telemetry_window():
+            input_telemetry.destroy()
+
+        #create switch to control overlay set to off initially
+        self.switch_var = customtkinter.StringVar(value='off')
+        self.overlay_switch = customtkinter.CTkSwitch(root, command=switch_function, text="Show Overlay", 
                                                         bg_color="#2b2b2b", progress_color="#d07c40",
-                                                        font=("",12,"bold"))
+                                                        font=("",12,"bold"), variable=self.switch_var, onvalue="on", offvalue="off")
         self.overlay_switch.grid(row=9, column=0,sticky="wes", padx=10, pady=10)
 
         #quit button

@@ -95,9 +95,9 @@ class iRacingDisplay:
         #update per 20ms
         self.root.after(20, self.update_values)
 
-if __name__ == "__main__":
-    root = customtkinter.CTk()
-    app = iRacingDisplay(root)
-    root.wm_attributes("-topmost", 1)
-    root.overrideredirect(True)
-    root.mainloop()
+#if __name__ == "__main__":
+#    root = customtkinter.CTk()
+#    app = iRacingDisplay(root)
+#    root.wm_attributes("-topmost", 1)
+#    root.overrideredirect(True)
+#    root.mainloop()
