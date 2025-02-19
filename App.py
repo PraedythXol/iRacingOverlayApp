@@ -7,12 +7,17 @@ import customtkinter
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("green") # Themes: blue (default), dark-blue, green
 
+red = "#d34242"
+blue= "#3b9dff"
+
 class iRacingDisplay:
     def __init__(self, root):
         self.root = root
         self.root.geometry("200x125")
         self.root.title("iRacing Live Data")
+        self.root.configure(fg_color="#1d1d1d")
         #root.configure(bg='#ff4b81')
+
         
         def move_root(e):
             root.geometry(f'+{e.x_root-100}+{e.y_root-62.5}')
@@ -32,14 +37,20 @@ class iRacingDisplay:
 
         #creating throttle bar
         self.throttleprogress = DoubleVar()
-        self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100, border_color="black") 
-        self.throttlebar.place(relx=0.76, rely=0.5, anchor=CENTER)
+        self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100, 
+                                                        border_color="black", width=10) 
+        self.throttlebar.place(relx=0.86, rely=0.5, anchor=CENTER)
      
         #creating brake bar
         self.brakeprogress = DoubleVar()
-        self.brakebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.brakeprogress, height=100, progress_color="red"
-                                                     , border_color="black") 
-        self.brakebar.place(relx=0.66, rely=0.5, anchor=CENTER)
+        self.brakebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.brakeprogress, height=100, progress_color=red
+                                                     , border_color="black", width=10) 
+        self.brakebar.place(relx=0.76, rely=0.5, anchor=CENTER)
+
+        self.clutchprogress = DoubleVar()
+        self.clutchbar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.clutchprogress, height=100, progress_color=blue
+                                                     , border_color="black", width=10) 
+        self.clutchbar.place(relx=0.66, rely=0.5, anchor=CENTER)
 
         self.update_values()
 
@@ -50,6 +61,7 @@ class iRacingDisplay:
             gear = self.ir['Gear']
             throttle = ((self.ir['Throttle']))
             brake = ((self.ir['Brake']))
+            clutch = ((self.ir['Clutch']))
             #value = self.brakebar.get()
             #print(value)
 
@@ -79,14 +91,27 @@ class iRacingDisplay:
                 if brake == 1:
                     #create clean bars if value = 1
                     self.brakeprogress.set(0.99)
-                    self.brakebar.configure(fg_color='red')
+                    self.brakebar.configure(fg_color=red)
                 #create clean bars if value = 0
                 elif brake == 0:
                     self.brakebar.set(0)
                     self.brakebar.configure(progress_color='#4a4d50')
                 else:
-                    self.brakebar.configure(progress_color='red', fg_color='#4a4d50')
+                    self.brakebar.configure(progress_color=red, fg_color='#4a4d50')
                     self.brakeprogress.set(brake)
+
+            if clutch is not None:
+                if brake == 1:
+                    #create clean bars if value = 1
+                    self.clutchprogress.set(0.99)
+                    self.clutchbar.configure(fg_color=blue)
+                #create clean bars if value = 0
+                elif clutch == 0:
+                    self.clutchbar.set(0)
+                    self.clutchbar.configure(progress_color='#4a4d50')
+                else:
+                    self.clutchbar.configure(progress_color=blue, fg_color='#4a4d50')
+                    self.clutchprogress.set(clutch)
         #set base display
         else:
             self.speed_label.configure(text="000",font=("Bahnschrift", 24, "bold"))
