@@ -10,7 +10,7 @@ customtkinter.set_default_color_theme("green") # Themes: blue (default), dark-bl
 red = "#d34242"
 blue= "#3b9dff"
 
-class iRacingDisplay:
+class telemetry_window_overlay:
     def __init__(self, root):
         self.root = root
         self.root.geometry("200x125")
@@ -122,7 +122,7 @@ class iRacingDisplay:
 
 #if __name__ == "__main__":
 #    root = customtkinter.CTk()
-#    app = iRacingDisplay(root)
+#    app = telemetry_window_overlay(root)
 #    root.wm_attributes("-topmost", 1)
 #    root.overrideredirect(True)
 #    root.mainloop()

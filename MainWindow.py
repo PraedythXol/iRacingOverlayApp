@@ -1,6 +1,6 @@
 import customtkinter
 import tkinter as tk
-from App import iRacingDisplay
+from App import telemetry_window_overlay
 from PIL import Image, ImageTk
 
 customtkinter.set_appearance_mode("dark")  # Modes: system (default), light, dark
@@ -29,7 +29,7 @@ class base_button(customtkinter.CTkButton):
                                                  height=48, width=140, border_color="black", 
                                                  corner_radius=0, border_width=0, fg_color=main_contents_color,
                                                  bg_color=main_contents_color, hover_color=main_color_theme_bright)  
-        self.button.grid(row=row, column=column, pady=0, sticky="news")
+        self.button.grid(row=row, column=column, sticky="news")
 
 #function to cycle between current "main frame", checks button number in array matches frame number in array
 #moves the selected from onscreen and highlights the selected button 
@@ -37,10 +37,10 @@ class base_button(customtkinter.CTkButton):
 def move_main_frames(i):
     if len(main.main_buttons) == len(main.main_frames):
         for j in range(len(main.main_frames)):
-            main.main_frames[j].grid(column=22)
+            main.main_frames[j].grid(column=max_columnspan+1)
             main.main_buttons[j].configure(fg_color=main_contents_color)
             if i == j:
-                main.main_frames[i].grid(row=2, column=2)
+                main.main_frames[i].grid(column=1)
                 main.main_buttons[i].configure(fg_color=main_color_theme)
     else: 
         print("Number of navigation buttons is not equal to number of navigable frames")
@@ -90,6 +90,10 @@ class base_frame(customtkinter.CTkFrame):
                                             border_color="black", corner_radius=0)
         self.frame.grid(row=row, column=column, sticky="nesw", columnspan=columnspan, rowspan=rowspan)
 
+#total size of window grid
+max_columnspan=20
+max_rowspan=20
+
 ##create frames from class, most frames initialized at column 22 to be placed off-screen for later use
 class contents_frame(base_frame):
     def __init__(self,root):
@@ -97,11 +101,22 @@ class contents_frame(base_frame):
         
 class title_frame(base_frame):
     def __init__(self,root):
-        super().__init__(root, x=1000, y=80, color=main_color_theme, bordersize=0, row=0, column=2, columnspan=18, rowspan=2)
+        super().__init__(root, x=860, y=80, color=main_color_theme, bordersize=0, row=0, column=1, columnspan=18, rowspan=2)
         
 class home_frame(base_frame):
     def __init__(self, root):
-        super().__init__(root, x=860, y=720, color=main_fg_color, bordersize=0, row=2, column=2, columnspan=18, rowspan=18)
+        super().__init__(root, x=860, y=720, color=main_fg_color, bordersize=0, row=2, column=1, columnspan=18, rowspan=18)
+
+        #frame layout testing
+        self.home_text = customtkinter.CTkLabel(self.frame, text="Welcome to Team Sora Racing", font=font_Large)
+        self.home_text.grid(row=3, column=2, sticky="ew", padx=280, pady=50)
+        self.settings_frame = customtkinter.CTkScrollableFrame(self.frame, height=554, width=780, fg_color=main_contents_color, scrollbar_button_color=main_color_theme, scrollbar_button_hover_color=main_color_theme_bright)
+        self.settings_frame.grid(row=4, column=2, pady=0, padx=32)
+        self.color_button = customtkinter.CTkButton(self.settings_frame, text="Change color", command=telemetry_color, fg_color=main_color_theme, hover_color=main_color_theme_bright, font=font_Medium)
+        self.color_button.grid(row=4, column=2)
+
+def telemetry_color():
+            telemetry_window.gear_label.configure(text_color="white")
 
 class input_telemetry_frame(base_frame):
     def __init__(self, root):
@@ -174,20 +189,6 @@ class main_Window:
         #set home page button as active
         self.main_buttons[0].configure(fg_color=main_color_theme)
 
-
-        #home text for testing############
-        self.home_text = customtkinter.CTkLabel(self.home_frame.frame, text="Welcome to Team Sora Racing", font=font_Large)
-        self.home_text.grid(row=2, column=2)
-
-
-
-
-
-        #image test 
-        #self.sora_image = customtkinter.CTkImage(light_image=Image.open("soracircle.png"), size=(80, 80))
-        #self.image_label = customtkinter.CTkLabel(self.title_frame.frame, image=self.sora_image, text="")
-        #self.image_label.grid(row=0, column=0, padx=10, pady=0, sticky="news")
-
         #switch and function to enable overlay position adjustment
         def switch_function():
             if self.switch_var.get() == "on":
@@ -199,7 +200,8 @@ class main_Window:
         def open_telemetry_window():
             global input_telemetry
             input_telemetry = customtkinter.CTkToplevel()
-            iRacingDisplay(input_telemetry)
+            global telemetry_window
+            telemetry_window = telemetry_window_overlay(input_telemetry)
             input_telemetry.wm_attributes("-topmost", 1)
             input_telemetry.overrideredirect(True)
             input_telemetry.mainloop()
@@ -214,13 +216,6 @@ class main_Window:
                                                         bg_color=main_contents_color, progress_color=main_color_theme,
                                                         font=font_Small, variable=self.switch_var, onvalue="on", offvalue="off")
         self.overlay_switch.grid(row=19, column=0,sticky="wes", padx=10, pady=10)
-
-        #quit button
-        #self.quit_button = customtkinter.CTkButton(root, height=24, width=34, text="X", 
-        #                                           command=quit, bg_color=main_color_theme, fg_color=main_color_theme, 
-        #                                           border_width=0, border_color="black", corner_radius=0, 
-        #                                           font=font_Medium, hover_color=main_color_theme_bright, text_color="white")
-        #self.quit_button.grid(row=0, column=19, sticky="ne", pady=1, padx=1)
 
 if __name__ == "__main__":
     root = customtkinter.CTk()

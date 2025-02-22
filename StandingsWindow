@@ -1,0 +1,196 @@
+import irsdk
+import customtkinter
+import tkinter as tk
+from PIL import Image, ImageTk
+import math
+
+
+player_class_size = 10
+other_class_size = 3
+
+def get_cars(self, drivers):
+    player_car_found = 0
+    cars = []
+    for driver in drivers:
+        if driver.get("CarClassID") != -1 and self.ir['PlayerCarIdx'] == driver.get("CarIdx") and player_car_found < 1:
+            cars.append(driver.get("CarClassShortName"))
+            player_car_found += 1
+            global player_class
+            player_class = driver.get("CarClassShortName")
+        elif driver.get("CarClassShortName") != None:
+            cars.append(driver.get("CarClassShortName"))
+    cars = list(set(cars))
+    return cars, player_class
+
+def convert_time(seconds):
+    seconds = round(seconds, 3)
+    if seconds > 0 and seconds < 60:
+        seconds = format(round(seconds, 5), '.4f')
+        return f"00:{seconds}"
+    else:
+        minutes = math.floor(seconds/60)
+        seconds = seconds%60
+        minutes = round(minutes, 3)
+        seconds = format(round(seconds, 3), '.3f')
+        if minutes < 10:
+            return f"0{minutes}:{seconds}"
+        else:
+            return f"{minutes}:{seconds}"
+
+class main_standings_frame:
+    def __init__(self,root):
+        self.frame = customtkinter.CTkFrame(root, width=700, height=600, fg_color="#1d1d1d", corner_radius=0)
+        self.frame.grid(sticky="sn")
+        self.frame.grid_propagate(False)
+
+class session_info_header(main_standings_frame):
+    def __init__(self,root):
+        super().__init__(root)
+        self.frame.configure(height=36, fg_color="black")
+        self.frame.grid(row=0)
+        self.session_info = customtkinter.CTkLabel(self.frame, text="Practice/Qualifying/Race", font=("Arial", 18, "bold"))
+        self.session_info.grid(row=0, padx=10, pady=4)
+
+class session_info_seperator(main_standings_frame):
+    def __init__(self,root):
+        super().__init__(root)
+        self.frame.configure(height=6, fg_color="brown")
+        self.frame.grid(row=1)
+
+#class car_class_transparency(main_standings_frame):
+#    def __init__(self,root):
+#        super().__init__(root)
+#        self.frame.configure(height=36, fg_color="brown", border_width=0)
+#        self.frame.grid(row=2)
+
+class car_class_header(main_standings_frame):
+    def __init__(self, root):
+        super().__init__(root)
+        self.frame.configure(height=36, width=160, fg_color="#d07c40", corner_radius=0, border_width=0)
+        self.frame.grid(row=2, sticky="we")
+        self.car_class_name = customtkinter.CTkLabel(self.frame, text="GTP Class  |  # Drivers", font=("Arial", 18, "bold"))
+        self.car_class_name.grid(row=0, padx=10, pady=4)
+
+class standings_row_frame_dark(main_standings_frame):
+    def __init__(self, root, row):
+        super().__init__(root)
+        self.frame.configure(height=36, fg_color="#1d1d1d")
+        self.frame.grid(row=row, columnspan=10)
+        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="#", font=("Arial", 18, "bold"))
+        self.score_array_col0.grid(row=0, pady=4, padx=4)
+        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="Test Player", font=("Arial", 18, "bold"))
+        self.score_array_col1.grid(column=1, row=0, pady=4, padx=4)
+
+class standings_row_frame_light(main_standings_frame):
+    def __init__(self, root, row):
+        super().__init__(root)
+        self.frame.configure(height=36, fg_color="#2b2b2b")
+        self.frame.grid(row=row, columnspan=10)
+        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="#", font=("Arial", 18, "bold"))
+        self.score_array_col0.grid(row=0, pady=4, padx=4)
+        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="Test Player", font=("Arial", 18, "bold"))
+        self.score_array_col1.grid(column=1, row=0, pady=4, padx=4)
+
+class class_standings_frame():
+    def __init__(self, root):
+        self.seperator = session_info_seperator(root)
+        self.class_header = car_class_header(root)
+        self.standings_row = []
+
+        for i in range(player_class_size):
+            if i%2 == 0:
+                self.standings_row.append(standings_row_frame_dark(root, i+3))
+            else:
+                self.standings_row.append(standings_row_frame_light(root, i+3))
+
+class row_labels(customtkinter.CTkLabel):
+    def __init__(self, root):
+        return
+    
+class car_class_section():
+    def __init__(self, root):
+        self.header = car_class_header(root)
+
+#standings window
+class standings_window:
+    def __init__(self,root):
+        self.root = root
+        self.root.geometry("700x600")
+        #self.root.minsize(1000,800)
+        #self.root.maxsize(1000,800)
+        self.root.attributes("-transparentcolor", "brown")
+        self.root.attributes("-alpha", 0.98)
+
+        self.ir = irsdk.IRSDK()
+        self.ir.startup()
+
+        self.standings_frame = main_standings_frame(self.root)
+
+        self.session_info = session_info_header(self.standings_frame.frame)
+        #self.seperator = session_info_seperator(self.standings_frame.frame)
+        #self.transparent_class_header = car_class_transparency(self.standings_frame.frame)
+        #self.class_header = car_class_header(self.standings_frame.frame)
+        self.player_class_frame = class_standings_frame(self.standings_frame.frame)
+
+        #self.standings_row = []
+
+        #for i in range(player_class_size):
+        #    if i%2 == 0:
+        #        self.standings_row.append(standings_row_frame_dark(self.standings_frame.frame, i+3))
+        #    else:
+        #        self.standings_row.append(standings_row_frame_light(self.standings_frame.frame, i+3))
+        
+        self.update_standings_values()
+    
+    def update_standings_values(self):
+        if self.ir.is_connected:
+            if self.ir['SessionInfo']:
+                
+                sessions = self.ir['SessionInfo']['Sessions']
+                session = sessions[1]
+                positions = session.get("ResultsPositions")
+
+                driver_info = self.ir['DriverInfo']
+                drivers = driver_info.get("Drivers")
+
+                session_data = self.ir['SessionInfo']
+                types = session_data.get('Sessions')
+
+                #Session info
+                for type in types:
+                    self.session_info.session_info.configure(text=f"{type.get('SessionType')}   |   {type.get('SessionLaps')}   |   {convert_time(self.ir['SessionTimeRemain'])}   |   {type.get('SessionTrackRubberState')}")
+
+                #Class Header
+                cars = get_cars(self, drivers)
+                self.player_class_frame.class_header.car_class_name.configure(text=f"{player_class} |  # Drivers") #cars[]
+
+                #Scoreboard rows
+                scoreboard = []
+                counter = 0
+                for position in positions:
+                    if positions == None:
+                        break
+                    else:
+                        for driver in drivers:
+                            if position.get("CarIdx") == driver.get("CarIdx") and self.ir['PlayerCarClass'] == driver.get("CarClassID"):
+                                counter +=1
+                                #class position begins at 0
+                                scoreboard.append(f"{position.get("ClassPosition")+1}        {driver.get("UserName")}               {convert_time(position.get("FastestTime"))} {driver.get("CarClassShortName")}")
+
+                for i in range(counter):
+                    self.player_class_frame.standings_row[i].score_array_col0.configure(text=f"{scoreboard[i]}")
+                    if i == player_class_size-1:
+                        break
+
+                                
+
+                
+
+        self.root.after(1000, self.update_standings_values)
+
+if __name__ == "__main__":
+    root = customtkinter.CTk()
+    app = standings_window(root)
+    root.wm_attributes("-topmost", 1)
+    #root.overrideredirect(True)
+    root.mainloop()
