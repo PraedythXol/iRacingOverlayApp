@@ -4,52 +4,378 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import math
 
-
-player_class_size = 10
+player_class_size = 8
 other_class_size = 3
+standings_data_font = ("Arial", 13, "bold")
+standings_title_font = ("Arial", 15, "bold")
+
+def time_to_class_leader(self, CarIdx):
+    return
+
+def get_session_driver_data(self):
+    if self.ir.is_connected:
+        if self.ir['SessionInfo']:
+            global sessions
+            global session
+            global results
+            global driver_info
+            global drivers 
+            global session_data
+            global types
+            global qualifying_results
+            
+            sessions = self.ir['SessionInfo']['Sessions']
+            qualifying_results = self.ir['QualifyResultsInfo']
+            session = sessions[self.ir['SessionNum']]
+            results = session.get("ResultsPositions")
+
+            if results == None:
+                results = qualifying_results
+           
+            driver_info = self.ir['DriverInfo']
+            drivers = driver_info.get("Drivers")
+
+            session_data = self.ir['SessionInfo']
+            types = session_data.get('Sessions')
+            return sessions, session, results, driver_info, drivers, session_data, types
+
+def get_qualifying_results(self):
+    return
+
+def create_other_class_frames(self):
+    return
+
+
+
+
+####################fix
+
+def calc_fastest_lap_player_frame(self, driver_best_lap, driver_last_lap, i):
+    if driver_best_lap == -1 and driver_last_lap == -1:
+        ######get qualy time
+        driver_last_lap = "Lap not recorded"
+        driver_best_lap = "00:00.00"
+        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}")
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        return
+    elif driver_last_lap != -1 and driver_best_lap != -1:
+        if driver_last_lap == driver_best_lap:
+            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+        elif driver_last_lap > driver_best_lap:
+            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}", text_color="white")
+            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="white")
+        elif driver_best_lap > driver_last_lap:
+            driver_best_lap = driver_last_lap
+            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+
+    elif driver_last_lap == None and driver_best_lap != None:
+        driver_last_lap = "Lap not recorded"
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+
+    elif driver_last_lap != None and driver_best_lap == None:
+        driver_best_lap = driver_last_lap
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+
+def calc_fastest_lap_other_frame(self, driver_best_lap, driver_last_lap, i, j):
+    if driver_best_lap == -1 and driver_last_lap == -1:
+        ######get qualy time
+        driver_last_lap = "Lap not recorded"
+        driver_best_lap = "00:00.00"
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        return
+    elif driver_last_lap != -1 and driver_best_lap != -1:
+        if driver_last_lap == driver_best_lap:
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+        elif driver_last_lap > driver_best_lap:
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}", text_color="white")
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="white")
+        elif driver_best_lap > driver_last_lap:
+            driver_best_lap = driver_last_lap
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+
+    elif driver_last_lap == None and driver_best_lap != None:
+        driver_last_lap = "Lap not recorded"
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+
+    elif driver_last_lap != None and driver_best_lap == None:
+        driver_best_lap = driver_last_lap
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+
+def create_standings_classes(self):
+    get_session_driver_data(self)
+    get_session_info(self)
+    cars = get_cars(self, drivers)
+    get_sizeof_class(self, self.ir['PlayerCarClass'])
+    self.car_class_standings = []
+    i = 0
+    j = 0
+    for carclassid in cars[3]:
+        if j == len(cars[3])-1 and i == 1:
+           break
+        if carclassid == self.ir['PlayerCarClass']:
+            self.player_class_frame = class_frame(self.root, 'player', 1)
+            sizeof_car_class = get_sizeof_class(self, self.ir['PlayerCarClass'])
+            self.player_class_frame.class_standings.class_header.car_class_name.configure(text=f"{player_class} |  {sizeof_car_class}")
+            i += 1
+        else:
+            self.car_class_standings.append(class_frame(self.root, "", j+2))
+            sizeof_car_class = get_sizeof_class(self, carclassid)
+            self.car_class_standings[j].class_standings.class_header.car_class_name.configure(text=f"{carclassid} |  {sizeof_car_class}")
+            j += 1
+
+
+def get_position_list(self):
+    positions = []
+    global player_class_position
+    player_class_position = self.ir['PlayerCarClassPosition']
+    if player_class_position == None or player_class_position <= player_class_size:
+        for i in range(player_class_size):
+            positions.append(i+1)
+    else:
+        player_class_position = self.ir['PlayerCarClassPosition']
+        sizeof_car_class = get_sizeof_class(self, player_class_id)
+        if player_class_position + 2 <= sizeof_car_class:
+        ####need to add adjustment for player_class_size and fix if player is last 
+            positions = [1, 2, 3, player_class_position-2, player_class_position-1, player_class_position, player_class_position+1, player_class_position+2]
+        elif player_class_position + 1 == sizeof_car_class:
+            positions = [1, 2, 3, player_class_position-3, player_class_position-2, player_class_position-1, player_class_position, player_class_position+1]
+        elif player_class_position == sizeof_car_class:
+            positions = [1, 2, 3, player_class_position-4, player_class_position-3, player_class_position-2, player_class_position-1, player_class_position]
+    return positions
+
+def player_make_opaque_standings_frames(self, light, dark, i):
+    if i%2 == 0:
+        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=dark)
+    else:
+        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=light)
+
+def other_make_opaque_standings_frames(self, light, dark, i, j):
+    if i%2 == 0:
+        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=dark)
+    else:
+        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=light)
+
+def populate_player_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i):
+    self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text=f"{position}")
+    self.player_class_frame.class_standings.standings_row[i].score_array_col1.configure(text=f"{driver_user_name}")
+    self.player_class_frame.class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}")
+    calc_fastest_lap_player_frame(self, driver_best_lap, driver_last_lap, i)
+
+def populate_other_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i, j):
+    self.car_class_standings[j].class_standings.standings_row[i].score_array_col0.configure(text=f"{position}")
+    self.car_class_standings[j].class_standings.standings_row[i].score_array_col1.configure(text=f"{driver_user_name}")
+    self.car_class_standings[j].class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}")
+    calc_fastest_lap_other_frame(self, driver_best_lap, driver_last_lap, i, j)
+
+def update_player_standings(self, results, positions):
+    i = 0
+    if results != None:
+        for result in results:
+            get_driver_data(self, result.get('CarIdx'))
+            player_class_color_hex = hex(player_class_color).replace("0x", "#")
+            self.player_class_frame.class_standings.class_header.frame.configure(fg_color=player_class_color_hex)
+            #self.player_class_frame.class_header.car_class_name.configure(text_color=player_class_color_hex)
+            for position in positions:
+                class_position = int(result.get('ClassPosition')+1)
+                #check car for position and is in same class to the player
+                if class_position == (position) and driver_car_class_id == player_class_id:
+                    #only populate data size we need
+                    if i == player_class_size:
+                        break                   
+                    driver_position = result.get('ClassPosition')+1
+                    driver_last_lap = result.get('LastTime')
+                    driver_best_lap = result.get('FastestTime')
+                    driver_laps_completed = result.get('LapsComplete')
+                    #retrieve driver data using caridx and populate standings frames with text
+                    #rows empty until data gathered
+                    player_make_opaque_standings_frames(self, "#2b2b2b","#1d1d1d", i)
+                    if driver_position == player_class_position:
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text_color="#ff8934")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col1.configure(text_color="#ff8934")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text_color="#ff8934")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text_color="#ff8934")
+                    else:
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text_color=player_class_color_hex)
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col1.configure(text_color="white")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col2.configure(text_color="white")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text_color="white")
+                        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text_color="white")
+                    populate_player_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i)
+                    #if player in position 1, use to find total laps completed in the race and set them as the interval to compare times to
+                    #can grab other data about the leaders times from here
+                    if i == 0 and driver_laps_completed != None:
+                        self.session_info.session_info_col2.configure(text=f"Lap {driver_laps_completed+1}")
+                    i += 1
+
+def get_standings_data(self, results):
+    positions = get_position_list(self)
+    update_player_standings(self, results, positions)
+    driver_info = self.ir['DriverInfo']
+    drivers = driver_info.get("Drivers")
+    cars = get_cars(self, drivers)
+    classids = cars[3]
+    classids.remove(player_class_id)
+    classid_count = 0
+    for classid in classids:
+        if classid_count == len(classids):
+            break
+        sizeof_car_class = get_sizeof_class(self, classid)
+        i = 0
+        positions = [1, 2, 3]
+        if results != None:
+            for result in results:
+                get_driver_data(self, result.get('CarIdx'))
+                for position in positions:
+                    class_position = int(result.get('ClassPosition')+1)
+                    if driver_car_class_id == classid: 
+                        if class_position == position and position<4:
+                            if i == 3:
+                                break
+                            driver_position = result.get('ClassPosition')+1
+                            driver_last_lap = result.get('LastTime')
+                            driver_best_lap = result.get('FastestTime')
+                            driver_laps_completed = result.get('LapsComplete')
+                            if class_position == 1:
+                                class_color_hex = hex(class_color).replace("0x", "#")
+                                self.car_class_standings[classid_count].class_standings.class_header.frame.configure(fg_color=class_color_hex)
+                                self.car_class_standings[classid_count].class_standings.class_header.car_class_name.configure(text=f"{driver_class} |  {sizeof_car_class}", text_color="black")
+                            self.car_class_standings[classid_count].class_standings.standings_row[i].score_array_col0.configure(text_color=class_color_hex)
+                            other_make_opaque_standings_frames(self, "#2b2b2b","#1d1d1d", i, classid_count)
+                            populate_other_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i, classid_count)
+                            i += 1
+                        
+        classid_count += 1
+
+        #populate initial race data with results from qualifying as values are None until race starts
+
+def get_session_info(self):
+    if self.ir['SessionInfo']:
+        global track
+        global session_num
+        track = self.ir['WeekendInfo']['TrackDisplayName']
+        #track = track.upper()
+        session_num = self.ir['SessionNum']
+
+        if session_num == 0:
+            session_num = "Practice"
+        if session_num == 1:
+            session_num = "Qualifying"
+        if session_num == 2:
+            session_num = "Race"
+        
+        self.session_info.session_info_col0.configure(text=track)
+        self.session_info.session_info_col3.configure(text=session_num)
+
+        session_data = self.ir['SessionInfo']
+        types = session_data.get('Sessions')
+
+        for type in types:
+            global session_type
+            global session_time
+            session_type = type.get('SessionType')
+            session_time = self.ir['SessionTimeRemain']
+            self.session_info.session_info_col1.configure(text=session_time)
+        
+def get_driver_data(self, CarIdx):
+    if self.ir['SessionInfo']:
+        driver_info = self.ir['DriverInfo']
+        drivers = driver_info.get("Drivers")
+        for driver in drivers:
+            if driver.get('CarIdx') == CarIdx:
+                global driver_user_name
+                global driver_car_class_id
+                global driver_irating
+                global driver_car_name
+                global class_color
+                global driver_class
+                driver_user_name = driver.get('AbbrevName')
+                driver_car_class_id = driver.get('CarClassID')
+                driver_irating = driver.get('IRating')
+                class_color = driver.get('CarClassColor')
+                driver_car_name = driver.get('CarScreenNameShort')
+                driver_class = driver.get('CarClassShortName')
+        return driver_user_name, driver_car_class_id, driver_irating
+            
+def get_sizeof_class(self, CarClassID):
+        if self.ir['SessionInfo']:
+            driver_info = self.ir['DriverInfo']
+            drivers = driver_info.get("Drivers")
+            sizeof_car_class = 0
+            for driver in drivers:
+                if driver.get('CarClassID') == CarClassID:
+                    sizeof_car_class += 1
+            return sizeof_car_class
 
 def get_cars(self, drivers):
     player_car_found = 0
+    global cars
+    global carclassids
+    global player_class_id
+    global player_class
     cars = []
+    carclassids = []
     for driver in drivers:
         if driver.get("CarClassID") != -1 and self.ir['PlayerCarIdx'] == driver.get("CarIdx") and player_car_found < 1:
             cars.append(driver.get("CarClassShortName"))
             player_car_found += 1
             global player_class
+            global player_class_id
+            global player_class_color
             player_class = driver.get("CarClassShortName")
+            player_class_id = driver.get("CarClassID")
+            player_class_color = driver.get("CarClassColor")
         elif driver.get("CarClassShortName") != None:
             cars.append(driver.get("CarClassShortName"))
+            carclassids.append(driver.get("CarClassID"))
     cars = list(set(cars))
-    return cars, player_class
+    carclassids = list(set(carclassids))
+    return [cars, player_class, player_class_id, carclassids, player_class_color]
 
-def convert_time(seconds):
-    seconds = round(seconds, 3)
-    if seconds > 0 and seconds < 60:
-        seconds = format(round(seconds, 5), '.4f')
-        return f"00:{seconds}"
-    else:
-        minutes = math.floor(seconds/60)
-        seconds = seconds%60
-        minutes = round(minutes, 3)
-        seconds = format(round(seconds, 3), '.3f')
-        if minutes < 10:
-            return f"0{minutes}:{seconds}"
-        else:
-            return f"{minutes}:{seconds}"
+def convert_time_counter(seconds):
+    seconds = seconds * 100
+    if seconds > 0:
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        return "%d:%d:%d" % (hours, minutes, seconds)
 
 class main_standings_frame:
     def __init__(self,root):
-        self.frame = customtkinter.CTkFrame(root, width=700, height=600, fg_color="#1d1d1d", corner_radius=0)
+        self.frame = customtkinter.CTkFrame(root, width=600, height=30, fg_color="brown", corner_radius=0)
         self.frame.grid(sticky="sn")
+        self.frame.grid_configure(rowspan=1)
         self.frame.grid_propagate(False)
+
+class class_frame(main_standings_frame):
+    def __init__(self, root, player, row):
+        if player == 'player':
+            self.frame = customtkinter.CTkFrame(root, width=600, height=256, fg_color="brown", corner_radius=0)
+        else:
+            self.frame = customtkinter.CTkFrame(root, width=600, height=116, fg_color="brown", corner_radius=0)
+        self.frame.grid(row=row, sticky="sn")
+        self.frame.grid_configure(rowspan=1)
+        #self.frame.grid_propagate(False)
+        self.class_standings = class_standings_frame(self.frame, player)
 
 class session_info_header(main_standings_frame):
     def __init__(self,root):
         super().__init__(root)
-        self.frame.configure(height=36, fg_color="black")
+        self.frame.configure(height=30, fg_color="#151515")
         self.frame.grid(row=0)
-        self.session_info = customtkinter.CTkLabel(self.frame, text="Practice/Qualifying/Race", font=("Arial", 18, "bold"))
-        self.session_info.grid(row=0, padx=10, pady=4)
+        self.session_info_col0 = customtkinter.CTkLabel(self.frame, text="Practice/Qualifying/Race", font=standings_title_font)
+        self.session_info_col0.place(relx=0.01, rely=0.12)
+        self.session_info_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
+        self.session_info_col1.place(relx=0.54, rely=0.12)
+        self.session_info_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
+        self.session_info_col2.place(relx=0.73, rely=0.12)
+        self.session_info_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
+        self.session_info_col3.place(relx=0.99, rely=0.12, anchor="ne")
 
 class session_info_seperator(main_standings_frame):
     def __init__(self,root):
@@ -57,39 +383,46 @@ class session_info_seperator(main_standings_frame):
         self.frame.configure(height=6, fg_color="brown")
         self.frame.grid(row=1)
 
-#class car_class_transparency(main_standings_frame):
-#    def __init__(self,root):
-#        super().__init__(root)
-#        self.frame.configure(height=36, fg_color="brown", border_width=0)
-#        self.frame.grid(row=2)
-
 class car_class_header(main_standings_frame):
     def __init__(self, root):
         super().__init__(root)
-        self.frame.configure(height=36, width=160, fg_color="#d07c40", corner_radius=0, border_width=0)
-        self.frame.grid(row=2, sticky="we")
-        self.car_class_name = customtkinter.CTkLabel(self.frame, text="GTP Class  |  # Drivers", font=("Arial", 18, "bold"))
-        self.car_class_name.grid(row=0, padx=10, pady=4)
+        self.frame.configure(height=26, width=140, fg_color="#151515", corner_radius=0, border_width=0, border_color="white")
+        self.frame.grid(row=2, sticky="w")
+        self.frame.grid_columnconfigure(0, weight=1)
+        self.car_class_name = customtkinter.CTkLabel(self.frame, text="GTP Class  |  # Drivers", font=standings_title_font, text_color="black")
+        self.car_class_name.grid(row=0, padx=8, pady=0, sticky="w")
 
 class standings_row_frame_dark(main_standings_frame):
     def __init__(self, root, row):
         super().__init__(root)
-        self.frame.configure(height=36, fg_color="#1d1d1d")
+        self.frame.configure(height=28, fg_color="brown")
         self.frame.grid(row=row, columnspan=10)
-        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="#", font=("Arial", 18, "bold"))
-        self.score_array_col0.grid(row=0, pady=4, padx=4)
-        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="Test Player", font=("Arial", 18, "bold"))
-        self.score_array_col1.grid(column=1, row=0, pady=4, padx=4)
+        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col0.place(relx=0.01)
+        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col1.place(relx=0.06)
+        self.score_array_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col2.place(relx=0.28)
+        self.score_array_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col3.place(relx=0.38)
+        self.score_array_col4 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col4.place(relx=0.48)
 
 class standings_row_frame_light(main_standings_frame):
     def __init__(self, root, row):
         super().__init__(root)
-        self.frame.configure(height=36, fg_color="#2b2b2b")
+        self.frame.configure(height=28, fg_color="brown")
         self.frame.grid(row=row, columnspan=10)
-        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="#", font=("Arial", 18, "bold"))
-        self.score_array_col0.grid(row=0, pady=4, padx=4)
-        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="Test Player", font=("Arial", 18, "bold"))
-        self.score_array_col1.grid(column=1, row=0, pady=4, padx=4)
+        self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col0.place(relx=0.01)
+        self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col1.place(relx=0.06)
+        self.score_array_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col2.place(relx=0.28)
+        self.score_array_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col3.place(relx=0.38)
+        self.score_array_col4 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col4.place(relx=0.48)
 
 class class_standings_frame():
     def __init__(self, root, player):
@@ -99,6 +432,16 @@ class class_standings_frame():
             self.standings_row = []
 
             for i in range(player_class_size):
+                if i%2 == 0:
+                    self.standings_row.append(standings_row_frame_dark(root, i+3))
+                else:
+                    self.standings_row.append(standings_row_frame_light(root, i+3))
+        else:
+            self.seperator = session_info_seperator(root)
+            self.class_header = car_class_header(root)
+            self.standings_row = []
+
+            for i in range(other_class_size):
                 if i%2 == 0:
                     self.standings_row.append(standings_row_frame_dark(root, i+3))
                 else:
@@ -116,7 +459,8 @@ class car_class_section():
 class standings_window:
     def __init__(self,root):
         self.root = root
-        self.root.geometry("700x600")
+        self.root.geometry("600x600")
+        self.root.configure(fg_color="brown", bg_color="brown")
         #self.root.minsize(1000,800)
         #self.root.maxsize(1000,800)
         self.root.attributes("-transparentcolor", "brown")
@@ -126,65 +470,28 @@ class standings_window:
         self.ir.startup()
 
         self.standings_frame = main_standings_frame(self.root)
+        self.standings_frame.frame.configure(fg_color="brown")
 
         self.session_info = session_info_header(self.standings_frame.frame)
-        #self.seperator = session_info_seperator(self.standings_frame.frame)
-        #self.transparent_class_header = car_class_transparency(self.standings_frame.frame)
-        #self.class_header = car_class_header(self.standings_frame.frame)
-        self.player_class_frame = class_standings_frame(self.standings_frame.frame, 'player')
 
-        #self.standings_row = []
-
-        #for i in range(player_class_size):
-        #    if i%2 == 0:
-        #        self.standings_row.append(standings_row_frame_dark(self.standings_frame.frame, i+3))
-        #    else:
-        #        self.standings_row.append(standings_row_frame_light(self.standings_frame.frame, i+3))
-        
-        self.update_standings_values()
+        if self.ir.is_connected:
+            create_standings_classes(self)
+            self.update_standings_values()
     
     def update_standings_values(self):
-        if self.ir.is_connected:
-            if self.ir['SessionInfo']:
-                
-                sessions = self.ir['SessionInfo']['Sessions']
-                session = sessions[self.ir['SessionNum']]
-                positions = session.get("ResultsPositions")
-
-                driver_info = self.ir['DriverInfo']
-                drivers = driver_info.get("Drivers")
-
-                session_data = self.ir['SessionInfo']
-                types = session_data.get('Sessions')
+        get_session_driver_data(self)
 
                 #Session info
-                for type in types:
-                    self.session_info.session_info.configure(text=f"{type.get('SessionType')}   |   {type.get('SessionLaps')}   |   {convert_time(self.ir['SessionTimeRemain'])}   |   {type.get('SessionTrackRubberState')}")
+        get_session_info(self)
                     
                 #Class Header
-                cars = get_cars(self, drivers)
-                self.player_class_frame.class_header.car_class_name.configure(text=f"{player_class} |  # Drivers") #cars[]
+        cars = get_cars(self, drivers)
+        get_sizeof_class(self, self.ir['PlayerCarClass'])
+
 
                 #Scoreboard rows
-                scoreboard = []
-                counter = 0
-                
-                if positions != None:
-                    for position in positions:
-                        for driver in drivers:
-                            if position.get("CarIdx") == driver.get("CarIdx") and self.ir['PlayerCarClass'] == driver.get("CarClassID"):
-                                counter +=1
-                                #class position begins at 0
-                                scoreboard.append(f"{position.get("ClassPosition")+1}        {driver.get("UserName")}               {position.get("LastTime")} {driver.get("CarClassShortName")}")
+        get_standings_data(self, results)
 
-                for i in range(counter):
-                    self.player_class_frame.standings_row[i].score_array_col0.configure(text=f"{scoreboard[i]}")
-                    if i == player_class_size-1:
-                        break
-
-                                
-
-                
 
         self.root.after(1000, self.update_standings_values)
 

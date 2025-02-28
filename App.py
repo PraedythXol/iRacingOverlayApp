@@ -38,18 +38,18 @@ class telemetry_window_overlay:
         #creating throttle bar
         self.throttleprogress = DoubleVar()
         self.throttlebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.throttleprogress, height=100, 
-                                                        border_color="black", width=10) 
+                                                        border_color="black", width=10, corner_radius=0) 
         self.throttlebar.place(relx=0.86, rely=0.5, anchor=CENTER)
      
         #creating brake bar
         self.brakeprogress = DoubleVar()
         self.brakebar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.brakeprogress, height=100, progress_color=red
-                                                     , border_color="black", width=10) 
+                                                     , border_color="black", width=10, corner_radius=0) 
         self.brakebar.place(relx=0.76, rely=0.5, anchor=CENTER)
 
         self.clutchprogress = DoubleVar()
         self.clutchbar = customtkinter.CTkProgressBar(root, orientation="vertical", variable=self.clutchprogress, height=100, progress_color=blue
-                                                     , border_color="black", width=10) 
+                                                     , border_color="black", width=10, corner_radius=0) 
         self.clutchbar.place(relx=0.66, rely=0.5, anchor=CENTER)
 
         self.update_values()
