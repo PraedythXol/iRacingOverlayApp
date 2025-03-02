@@ -21,6 +21,10 @@ main_contents_color = "#2b2b2b"
 main_fg_color = "#1d1d1d"
 transparent_color = "brown"
 
+#main_contents_color = "#21222d"
+#main_fg_color = "#171b23"
+
+
 #base button class
 class base_button(customtkinter.CTkButton):
     def __init__(self, root, text, function, row, column):

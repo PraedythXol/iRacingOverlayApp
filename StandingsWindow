@@ -2,7 +2,7 @@ import irsdk
 import customtkinter
 import tkinter as tk
 from PIL import Image, ImageTk
-import math
+import datetime
 
 player_class_size = 8
 other_class_size = 3
@@ -10,7 +10,7 @@ standings_data_font = ("Arial", 13, "bold")
 standings_title_font = ("Arial", 15, "bold")
 
 def time_to_class_leader(self, CarIdx):
-    return
+    self.ir['CarIdxF2Time']
 
 def get_session_driver_data(self):
     if self.ir.is_connected:
@@ -42,71 +42,82 @@ def get_session_driver_data(self):
 def get_qualifying_results(self):
     return
 
-def create_other_class_frames(self):
-    return
-
-
-
-
-####################fix
+def convert_time(total_seconds):
+    minutes = int(total_seconds // 60)
+    seconds = int(total_seconds % 60)
+    split_seconds = (total_seconds - int(total_seconds)) * 100
+    return f"{minutes:02}:{seconds:02}.{int(split_seconds):02}"
 
 def calc_fastest_lap_player_frame(self, driver_best_lap, driver_last_lap, i):
     if driver_best_lap == -1 and driver_last_lap == -1:
         ######get qualy time
         driver_last_lap = "Lap not recorded"
         driver_best_lap = "00:00.00"
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
         self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}")
-        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
         return
-    elif driver_last_lap != -1 and driver_best_lap != -1:
-        if driver_last_lap == driver_best_lap:
-            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
-        elif driver_last_lap > driver_best_lap:
-            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}", text_color="white")
-            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="white")
-        elif driver_best_lap > driver_last_lap:
+    elif driver_last_lap != -1:
+        if driver_best_lap != -1:
+            if driver_last_lap == driver_best_lap:
+                self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+                self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+            elif driver_last_lap > driver_best_lap:
+                self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}", text_color="white")
+                self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="white")
+            elif driver_best_lap > driver_last_lap:
+                driver_best_lap = driver_last_lap
+                self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+                self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+        else: 
             driver_best_lap = driver_last_lap
-            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
-
+            self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}", text_color="white")
+            self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="white")
     elif driver_last_lap == None and driver_best_lap != None:
-        driver_last_lap = "Lap not recorded"
-        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
     elif driver_last_lap != None and driver_best_lap == None:
         driver_best_lap = driver_last_lap
-        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+        self.player_class_frame.class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+    else:
+        self.player_class_frame.class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}", text_color="white")
+        
 
 def calc_fastest_lap_other_frame(self, driver_best_lap, driver_last_lap, i, j):
     if driver_best_lap == -1 and driver_last_lap == -1:
         ######get qualy time
-        driver_last_lap = "Lap not recorded"
+        driver_last_lap = "-"
         driver_best_lap = "00:00.00"
-        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}")
         self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}")
         return
-    elif driver_last_lap != -1 and driver_best_lap != -1:
-        if driver_last_lap == driver_best_lap:
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
-        elif driver_last_lap > driver_best_lap:
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}", text_color="white")
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="white")
-        elif driver_best_lap > driver_last_lap:
+    elif driver_last_lap != -1:
+        if driver_best_lap != -1:
+            if driver_last_lap == driver_best_lap:
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+            elif driver_last_lap > driver_best_lap:
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}", text_color="white")
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="white")
+            elif driver_best_lap > driver_last_lap:
+                driver_best_lap = driver_last_lap
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+                self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+        else:
             driver_best_lap = driver_last_lap
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+            self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}")
 
     elif driver_last_lap == None and driver_best_lap != None:
-        driver_last_lap = "Lap not recorded"
+        driver_last_lap = "-"
         self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}")
 
     elif driver_last_lap != None and driver_best_lap == None:
         driver_best_lap = driver_last_lap
-        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{driver_best_lap}")
-        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{driver_last_lap}", text_color="green")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col4.configure(text=f"{convert_time(driver_last_lap)}", text_color="#25f35f")
+    else:
+        self.car_class_standings[j].class_standings.standings_row[i].score_array_col3.configure(text=f"{convert_time(driver_best_lap)}")
 
 def create_standings_classes(self):
     get_session_driver_data(self)
@@ -152,26 +163,27 @@ def get_position_list(self):
 
 def player_make_opaque_standings_frames(self, light, dark, i):
     if i%2 == 0:
-        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=dark)
+        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=dark, height=28)
     else:
-        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=light)
+        self.player_class_frame.class_standings.standings_row[i].frame.configure(fg_color=light, height=28)
 
 def other_make_opaque_standings_frames(self, light, dark, i, j):
     if i%2 == 0:
-        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=dark)
+        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=dark, height=28)
     else:
-        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=light)
+        self.car_class_standings[j].class_standings.standings_row[i].frame.configure(fg_color=light, height=28)
 
 def populate_player_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i):
-    self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text=f"{position}")
+    self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text=f"{position}  |")
     self.player_class_frame.class_standings.standings_row[i].score_array_col1.configure(text=f"{driver_user_name}")
-    self.player_class_frame.class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}")
+    self.player_class_frame.class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}", fg_color="white", text_color="black", corner_radius=12, height=20)
     calc_fastest_lap_player_frame(self, driver_best_lap, driver_last_lap, i)
 
 def populate_other_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i, j):
-    self.car_class_standings[j].class_standings.standings_row[i].score_array_col0.configure(text=f"{position}")
+    self.car_class_standings[j].class_standings.standings_row[i].score_array_col0.configure(text=f"{position}  |")
     self.car_class_standings[j].class_standings.standings_row[i].score_array_col1.configure(text=f"{driver_user_name}")
-    self.car_class_standings[j].class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}")
+    self.car_class_standings[j].class_standings.standings_row[i].score_array_col2.configure(text=f"{driver_irating}", fg_color="white", text_color="black", corner_radius=12, height=20)
+    #self.car_class_standings[j].class_standings.standings_row[i].score_array_col5.configure(text=f"{round(times[i], 1)}")
     calc_fastest_lap_other_frame(self, driver_best_lap, driver_last_lap, i, j)
 
 def update_player_standings(self, results, positions):
@@ -195,7 +207,7 @@ def update_player_standings(self, results, positions):
                     driver_laps_completed = result.get('LapsComplete')
                     #retrieve driver data using caridx and populate standings frames with text
                     #rows empty until data gathered
-                    player_make_opaque_standings_frames(self, "#2b2b2b","#1d1d1d", i)
+                    player_make_opaque_standings_frames(self, "#21222d","#171b23", i)
                     if driver_position == player_class_position:
                         self.player_class_frame.class_standings.standings_row[i].score_array_col0.configure(text_color="#ff8934")
                         self.player_class_frame.class_standings.standings_row[i].score_array_col1.configure(text_color="#ff8934")
@@ -210,10 +222,10 @@ def update_player_standings(self, results, positions):
                     populate_player_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i)
                     #if player in position 1, use to find total laps completed in the race and set them as the interval to compare times to
                     #can grab other data about the leaders times from here
-                    if i == 0 and driver_laps_completed != None:
-                        self.session_info.session_info_col2.configure(text=f"Lap {driver_laps_completed+1}")
+                    #if i == 0 and driver_laps_completed != None:
+                        #self.session_info.session_info_col2.configure(text=f"Lap {driver_laps_completed+1}")
                     i += 1
-
+    
 def get_standings_data(self, results):
     positions = get_position_list(self)
     update_player_standings(self, results, positions)
@@ -233,21 +245,21 @@ def get_standings_data(self, results):
             for result in results:
                 get_driver_data(self, result.get('CarIdx'))
                 for position in positions:
+                    if i == 3:
+                        break
                     class_position = int(result.get('ClassPosition')+1)
                     if driver_car_class_id == classid: 
+                        class_color_hex = hex(class_color).replace("0x", "#")
+                        self.car_class_standings[classid_count].class_standings.class_header.frame.configure(fg_color=class_color_hex)
+                        self.car_class_standings[classid_count].class_standings.class_header.car_class_name.configure(text=f"{driver_class} |  {sizeof_car_class}", text_color="black")
                         if class_position == position and position<4:
-                            if i == 3:
-                                break
                             driver_position = result.get('ClassPosition')+1
                             driver_last_lap = result.get('LastTime')
                             driver_best_lap = result.get('FastestTime')
                             driver_laps_completed = result.get('LapsComplete')
-                            if class_position == 1:
-                                class_color_hex = hex(class_color).replace("0x", "#")
-                                self.car_class_standings[classid_count].class_standings.class_header.frame.configure(fg_color=class_color_hex)
-                                self.car_class_standings[classid_count].class_standings.class_header.car_class_name.configure(text=f"{driver_class} |  {sizeof_car_class}", text_color="black")
+
                             self.car_class_standings[classid_count].class_standings.standings_row[i].score_array_col0.configure(text_color=class_color_hex)
-                            other_make_opaque_standings_frames(self, "#2b2b2b","#1d1d1d", i, classid_count)
+                            other_make_opaque_standings_frames(self, "#21222d","#171b23", i, classid_count)
                             populate_other_standings_frames(self, position, driver_user_name, driver_irating, driver_car_name, driver_last_lap, driver_best_lap, i, classid_count)
                             i += 1
                         
@@ -280,8 +292,10 @@ def get_session_info(self):
             global session_type
             global session_time
             session_type = type.get('SessionType')
-            session_time = self.ir['SessionTimeRemain']
-            self.session_info.session_info_col1.configure(text=session_time)
+            session_time = type.get('SessionTime')
+            session_time = datetime.timedelta(seconds=round(float(session_time.replace(" sec", ""))))
+            session_time_remaining = datetime.timedelta(seconds=round(self.ir['SessionTimeRemain']))
+            self.session_info.session_info_col1.configure(text=f"{session_time_remaining}/{session_time}")
         
 def get_driver_data(self, CarIdx):
     if self.ir['SessionInfo']:
@@ -371,9 +385,9 @@ class session_info_header(main_standings_frame):
         self.session_info_col0 = customtkinter.CTkLabel(self.frame, text="Practice/Qualifying/Race", font=standings_title_font)
         self.session_info_col0.place(relx=0.01, rely=0.12)
         self.session_info_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
-        self.session_info_col1.place(relx=0.54, rely=0.12)
-        self.session_info_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
-        self.session_info_col2.place(relx=0.73, rely=0.12)
+        self.session_info_col1.place(relx=0.59, rely=0.12)
+        #self.session_info_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
+        #self.session_info_col2.place(relx=0.73, rely=0.12)
         self.session_info_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_title_font)
         self.session_info_col3.place(relx=0.99, rely=0.12, anchor="ne")
 
@@ -387,7 +401,7 @@ class car_class_header(main_standings_frame):
     def __init__(self, root):
         super().__init__(root)
         self.frame.configure(height=26, width=140, fg_color="#151515", corner_radius=0, border_width=0, border_color="white")
-        self.frame.grid(row=2, sticky="w")
+        self.frame.grid(row=2, sticky="we")
         self.frame.grid_columnconfigure(0, weight=1)
         self.car_class_name = customtkinter.CTkLabel(self.frame, text="GTP Class  |  # Drivers", font=standings_title_font, text_color="black")
         self.car_class_name.grid(row=0, padx=8, pady=0, sticky="w")
@@ -395,34 +409,38 @@ class car_class_header(main_standings_frame):
 class standings_row_frame_dark(main_standings_frame):
     def __init__(self, root, row):
         super().__init__(root)
-        self.frame.configure(height=28, fg_color="brown")
+        self.frame.configure(height=0, fg_color="brown")
         self.frame.grid(row=row, columnspan=10)
         self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
         self.score_array_col0.place(relx=0.01)
         self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
         self.score_array_col1.place(relx=0.06)
         self.score_array_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col2.place(relx=0.28)
+        self.score_array_col2.place(relx=0.28, rely=0.12)
         self.score_array_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col3.place(relx=0.38)
+        self.score_array_col3.place(relx=0.40)
         self.score_array_col4 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col4.place(relx=0.48)
+        self.score_array_col4.place(relx=0.50)
+        self.score_array_col5 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col5.place(relx=0.60)
 
 class standings_row_frame_light(main_standings_frame):
     def __init__(self, root, row):
         super().__init__(root)
-        self.frame.configure(height=28, fg_color="brown")
+        self.frame.configure(height=0, fg_color="brown")
         self.frame.grid(row=row, columnspan=10)
         self.score_array_col0 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
         self.score_array_col0.place(relx=0.01)
         self.score_array_col1 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
         self.score_array_col1.place(relx=0.06)
         self.score_array_col2 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col2.place(relx=0.28)
+        self.score_array_col2.place(relx=0.28, rely=0.14)
         self.score_array_col3 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col3.place(relx=0.38)
+        self.score_array_col3.place(relx=0.40)
         self.score_array_col4 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
-        self.score_array_col4.place(relx=0.48)
+        self.score_array_col4.place(relx=0.50)
+        self.score_array_col5 = customtkinter.CTkLabel(self.frame, text="", font=standings_data_font)
+        self.score_array_col5.place(relx=0.60)
 
 class class_standings_frame():
     def __init__(self, root, player):
